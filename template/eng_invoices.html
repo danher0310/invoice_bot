@@ -1,0 +1,255 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <link rel="stylesheet" href="./assets/css/index.css">
+  <title>Document</title>
+</head>
+
+<body>
+  <style>
+    body{
+      padding-left: 100px;
+    }
+
+    .container-header{
+      display: block;
+    }
+    
+    
+    
+  
+  
+    #logo{
+      padding: 0 0 5px 0;
+      margin: 0;
+      display: inline-block;
+      height: 96px;
+      width: 195px;
+      background-repeat: no-repeat!important;
+      text-indent: -9999px;
+      background-size: contain!important;
+    }
+  .header{
+    width: 900px;
+    
+    padding-top: 80px;
+  }
+  .subheader{
+    margin-top: 80px;
+    margin-bottom: 5rem ;
+  }
+  .row1{
+    padding: 0 10rem 0 0;
+
+  }
+  .row2{
+    padding: 0 0 0 10rem;
+
+  }
+
+
+  .row1-sub-header{
+    padding: 0 20rem 0 0;
+  }
+  .invoice-body, .balance-body {
+    width: 860px;
+    
+  }
+  .invoice-body th,
+  .invoice-body td{
+    padding: 10px 20px;
+  }
+
+  .text-end{
+    text-align: end;
+  }
+  .img-space{
+    margin-top: 1rem;
+    padding-top: 1rem;
+    padding-left: 0.7rem;
+    margin-bottom: 0;
+
+  }
+  .company_name{
+    margin-bottom:0;
+  }
+  .img-space p{
+    margin: 0;
+    padding:0;
+
+  }
+  .table thead{
+    background-color: #00B0F0;
+    color: #fff
+  }
+ 
+  
+  invoice-header td{
+    display:flex;
+    justify-content: space-between;
+  }
+  
+  
+  </style>
+
+
+  <table class="header" >
+    <tbody>
+      <tr class="invoice-header">
+        <td colspan="" class="row1">
+          <h1 class="row1"><h1><strong>INVOICE</strong></h1>
+        </td>
+        
+        <td >
+          <h1 colspan="4" class="row2" >{{name}}</h1>            
+          
+         
+        </td>      
+      </tr>      
+    
+      <tr>
+        
+        <td colspan="" class="row1">Invoice Nº {{invoiceN}} <br>  Date: {{dates}}</td>
+        <td colspan="4" rowspan="5" class="row2">{{ address }} <br>{{ phone }}
+           
+        </td>
+      </tr>
+
+
+
+      
+
+    </tbody>
+
+  </table>
+
+  <table class="subheader" >
+    <tbody>
+      <tr>
+        <td colspan="50" class="row1-sub-header">
+          <p class=""><p><strong>TO: </strong> <br>
+            Iconicmind <br>
+            8808 63rd Ave. <br>
+            College Park, MD 20740<br>
+            
+          </p>
+        </td>               
+       
+        <td>
+          <p colspan="4" class="row2" > Account Nº {{ account }}</p>           
+         
+        </td>      
+      </tr>      
+    
+      
+      
+
+
+      
+
+    </tbody>
+
+  </table>
+  
+   
+  
+  <table class="table invoice-body">
+    <thead>
+      <tr>
+        <th scope="col">Description</th>
+        <th scope="col">Amount</th>
+        <th scope="col">Tax</th>
+        <th scope="col">Total</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td scope="row">{{ description }}</td>
+        <td>${{price}}</td>
+        <td>0.00</td>
+        <td class="text-end">${{price}}</td>
+      </tr>
+      
+      <tr>                
+        <td colspan="3" class="text-end">SUB-TOTAL</td>
+        <td class="text-end"> ${{price}} </td>
+      </tr>
+      <tr>                
+        <td colspan="3" class="text-end">TAX</td>
+        <td class="text-end"> 0.00</td>
+      </tr>
+      <tr>                
+        <td colspan="3" class="text-end">PAYMENT(S) APPLIED</td>
+        <td class="text-end"> 0.00</td>
+      </tr>
+      <tr>                
+        <td colspan="3" class="text-end"><strong>TOTAL</strong></td>
+        <td class="text-end"> <strong id="grand-total"> ${{price}} </strong></td>
+      </tr>
+    </tbody>
+  </table>
+      
+      <p>Payment due: {{dates}}</p> 
+
+   
+
+  <p>Balance: </p>
+  <table class="table balance-body">
+    <thead>
+      <tr>
+        <th scope="col">Fecha</th>
+        <th scope="col">Descripción</th>
+        <th scope="col">Balance </br> Previo</th>
+        <th scope="col">Cargo</th>
+        <th scope="col"> Pago </th>
+        <th scope="col">Restante</th>
+      </tr>
+    </thead>
+    
+    <tbody>
+      
+      {% if bal_line1  %}
+        
+        <tr>
+          {% for line in bal_line1 %}
+            <td  scope="row">{{line}}</td>
+          {% endfor %}
+          
+        </tr>
+        
+      {% endif %}
+      
+      {% if bal_line2  %}
+        
+        <tr>
+          {% for line in bal_line2 %}
+            <td    scope="row">{{line}}</td>
+          {% endfor %}
+          
+        </tr>
+        
+      {% endif %}
+
+      {% if bal_line3  %}
+        
+        <tr>
+          {% for line in bal_line3 %}
+            <td   scope="row">{{line}}</td>
+          {% endfor %}
+          
+        </tr>
+        
+      {% endif %}
+      
+    </tbody>
+    
+  </table>
+
+
+
+</body>
+</html>
