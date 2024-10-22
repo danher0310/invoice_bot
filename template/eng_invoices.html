@@ -63,7 +63,10 @@
   .invoice-body td{
     padding: 10px 20px;
   }
+  .balance_text{
+    text-align: center;
 
+  }
   .text-end{
     text-align: end;
   }
@@ -176,7 +179,7 @@
       
       <tr>                
         <td colspan="3" class="text-end">SUB-TOTAL</td>
-        <td class="text-end"> ${{price}} </td>
+        <td class="text-end"> {{price}} </td>
       </tr>
       <tr>                
         <td colspan="3" class="text-end">TAX</td>
@@ -188,7 +191,7 @@
       </tr>
       <tr>                
         <td colspan="3" class="text-end"><strong>TOTAL</strong></td>
-        <td class="text-end"> <strong id="grand-total"> ${{price}} </strong></td>
+        <td class="text-end"> <strong id="grand-total"> {{price}} </strong></td>
       </tr>
     </tbody>
   </table>
@@ -212,38 +215,24 @@
     
     <tbody>
       
-      {% if bal_line1  %}
+      {% if balance  %}
         
-        <tr>
-          {% for line in bal_line1 %}
-            <td  scope="row">{{line}}</td>
+       
+          {% for lines in balance %}
+          <tr>
+            {% for item in lines %}
+            <td scope="row" class="balance_text">{{item}}</td>
+            {% endfor %}
+
+
+          </tr>            
+           
           {% endfor %}
           
-        </tr>
+        
         
       {% endif %}
       
-      {% if bal_line2  %}
-        
-        <tr>
-          {% for line in bal_line2 %}
-            <td    scope="row">{{line}}</td>
-          {% endfor %}
-          
-        </tr>
-        
-      {% endif %}
-
-      {% if bal_line3  %}
-        
-        <tr>
-          {% for line in bal_line3 %}
-            <td   scope="row">{{line}}</td>
-          {% endfor %}
-          
-        </tr>
-        
-      {% endif %}
       
     </tbody>
     

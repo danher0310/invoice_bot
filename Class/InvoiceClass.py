@@ -18,6 +18,7 @@ class CreateInvoice:
     self.language = data[7]    
     self.chat_id = data[8]
     self.amount = data[9]
+    self.balance = data[10]
     self.path = None    
     
            
@@ -40,7 +41,8 @@ class CreateInvoice:
       'phone' : self.provider_phone,
       'account' : self.account,
       'description' :self.description, 
-      'price' : self.amount
+      'price' : self.amount,
+      'balance': self.balance
       
       
       

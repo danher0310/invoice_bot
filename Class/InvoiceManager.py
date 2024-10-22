@@ -4,6 +4,7 @@ from DatabaseManagerClass import DatabaseManager
 from InvoiceClass import CreateInvoice
 from datetime import datetime
 from dateutil.relativedelta import relativedelta
+import babel.numbers
 
 class InvoiceManager:
   
@@ -80,33 +81,27 @@ class InvoiceManager:
         chat_id = data[8]
         description = data[9]
         language = data[10]
-        amount = data[11]
-        
+        amount = babel.numbers.format_currency(data[11] , "USD")
         
         if (form == 'days'):
           day_show = list(day_show.replace(",", ""))
           description += self.build_days_desctiption(day_show, language)
         elif (form == 'actual'):
           description +=self.build_month_description(language)          
-          
-        balances =  self.check_balance(provider_id)
-        table =  []
-        if len(balances) > 0:
-          # balances = list(reversed(balances))
-          for balance in balances:
-            
-            
-            check_payment = self.check_payments(balance[0], provider_name, 30)
-            
-            print(check_payment)
-            
-        print(balances)
+
+        balance = self.build_balance( provider_id, provider_name, 30)
+        
+        if balance != None:
+          balance = balance
+        else:
+          balance = []
+        
         
         test_data = (provider_id, provider_name, provider_address, provider_phone, account, invoice_default, form, day_show, description, language, chat_id, amount  )
-        provider_data = (provider_id, provider_name, provider_address, provider_phone, account, invoice_default, description, language, chat_id, amount   )   
-        print(test_data)      
-        # test = CreateInvoice(list(provider_data))
-        # test.print_invoice()
+        provider_data = (provider_id, provider_name, provider_address, provider_phone, account, invoice_default, description, language, chat_id, amount, balance  )   
+        #print(test_data)      
+        test = CreateInvoice(list(provider_data))
+        test.print_invoice()
         
     myDB.close()
     
@@ -177,25 +172,40 @@ class InvoiceManager:
     
     
     
-  
-    
-    
-    
-    
-    
-    
-      
-      
-      
-    
-    
-    
+  def build_balance(self, provider_id, provider_name, difference):
+    balances =  self.check_balance(provider_id)
+    table =  []
+    if len(balances) > 0:
+      row =  []
+      old_payment = 0
+      for balance in balances:            
+        payment = self.check_payments(balance[0], provider_name, 30)           
+        date_invoice = balance[0].strftime("%m/%d/%Y")             
+        description = balance[1]
+        charge = balance[3]
+        
+        if len(table) == 0:
+          previous = balance[2] - balance[3] + payment
+          total_debt = balance[2]
+        else: 
+          previous = (previous - balance[3]) + (payment)
+          total_debt = balance[2] + old_payment
           
+        row = date_invoice, description, babel.numbers.format_currency(previous, "USD"), babel.numbers.format_currency(charge, "USD"), babel.numbers.format_currency(payment, "USD"), babel.numbers.format_currency(total_debt, "USD")
+        previous = previous
+        old_payment += payment                      
+        table.append(list(row))  
+      print(list(reversed(table)))  
+        
+       
+      return list(reversed(table))
+
+    else:
+      return None
     
-      
     
     
-    
+ 
     
   
   
@@ -215,9 +225,4 @@ test = InvoiceManager()
 test.check_monthly_invoices()
 
 
-  
 
-
-  
-    
-  
