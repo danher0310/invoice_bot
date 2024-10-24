@@ -100,7 +100,6 @@ class DatabaseManager:
         self.cursor.close()
     if self.connection:
         self.connection.close()
-    print("Conection close.")
     
   
 # db_test = DatabaseManager( '', 'invoices' )

@@ -2,15 +2,16 @@
 from datetime import datetime
 from DatabaseManagerClass import DatabaseManager
 from InvoiceClass import CreateInvoice
-from datetime import datetime
+from datetime import datetime, date
 from dateutil.relativedelta import relativedelta
 import babel.numbers
+import calendar
 
 class InvoiceManager:
   
   def __init__(self):
     self.week_day = self.weekDay()
-    self.date_number = 8
+    self.date_number =self.date()
     
   def weekDay(self):
     day_name = datetime.now().isoweekday()
@@ -23,28 +24,42 @@ class InvoiceManager:
   def check_weekly_invoices(self):
     myDB = DatabaseManager()
     myDB.connect()    
-    sql = "SELECT id, name, address, phone, account, invoice_default, chat_id from providers where frequency = %s and days like %s"
+    sql = "SELECT id, name, address, phone, account, invoice_default,  chat_id, description, languages, amount, initials  chat_id from providers where frequency = %s and days like %s"
     params = ('weekly',f'%{self.week_day}%' )
     checker  = myDB.execute_query(sql, params)
     if (len(checker) > 0):
       for data in checker:
         provider_id = data[0]
-        provider_client = data[1]
+        provider_name = data[1]
         provider_address = data[2]
         provider_phone = data[3]
         account = data[4]
-        invoice_default = data[5]
+        invoice_default = data[5]        
         chat_id = data[6]
+        description = data[7]
+        language = data[8]        
+        amount = babel.numbers.format_currency(data[9] , "USD")
+        initials = data[10]
         
+        description += self.build_fortnightly_description(language)
         
-        provider_data = (provider_id, provider_client, provider_address, provider_phone, account, invoice_default, chat_id   )
-        print(provider_data)
+        balance = self.build_balance( provider_id, provider_name, 7)
+        
+        if balance != None:
+          balance = balance
+        else:
+          balance = []
+        
+        provider_data = (provider_id, provider_name, provider_address, provider_phone, account, invoice_default, description, language, chat_id, amount, balance, initials )
+        invoice = CreateInvoice(list(provider_data))
+        return(invoice.print_invoice(), chat_id)
+        
     myDB.close()
         
   def check_fortnightly_invoices(self):
     myDB = DatabaseManager()
     myDB.connect()    
-    sql = "SELECT id, name, address, phone, account, invoice_default, chat_id from providers where frequency = %s and days like %s"
+    sql = "SELECT id, name, address, phone, account, invoice_default,  chat_id, description, languages, amount, initials  chat_id from providers where frequency = %s and days like %s"
     params = ('fortnightly',f'%{self.date_number}%')
     checker  = myDB.execute_query(sql, params)
     if (len(checker) > 0):
@@ -54,18 +69,32 @@ class InvoiceManager:
         provider_address = data[2]
         provider_phone = data[3]
         account = data[4]
-        invoice_default = data[5]
-        chat_id = data[6]        
-        provider_data = (provider_id, provider_name, provider_address, provider_phone, account, invoice_default, chat_id  )
-        test = CreateInvoice(list(provider_data))
-        test.print_invoice()
-        print(list(provider_data))
+        invoice_default = data[5]        
+        chat_id = data[6]
+        description = data[7]
+        language = data[8]        
+        amount = babel.numbers.format_currency(data[9] , "USD")
+        initials = data[10]
+        
+        description += self.build_fortnightly_description(language)
+        
+        balance = self.build_balance( provider_id, provider_name, 15)
+        
+        if balance != None:
+          balance = balance
+        else:
+          balance = []          
+              
+        provider_data = (provider_id, provider_name, provider_address, provider_phone, account, invoice_default, description, language, chat_id, amount, balance, initials )
+        invoice = CreateInvoice(list(provider_data))
+        return(invoice.print_invoice(), chat_id)
+        
     myDB.close()
     
   def check_monthly_invoices(self):
     myDB = DatabaseManager()
     myDB.connect()    
-    sql = "SELECT id, name, address, phone, account, invoice_default, format, dates_show, chat_id, description, languages, amount  from providers where frequency = %s and days like %s"
+    sql = "SELECT id, name, address, phone, account, invoice_default, format, dates_show, chat_id, description, languages, amount, initials  from providers where frequency = %s and days like %s"
     params = ('monthly',f'%{self.date_number}%')
     checker  = myDB.execute_query(sql, params)
     if (len(checker) > 0):
@@ -80,8 +109,9 @@ class InvoiceManager:
         day_show = (data[7])
         chat_id = data[8]
         description = data[9]
-        language = data[10]
+        language = data[10]        
         amount = babel.numbers.format_currency(data[11] , "USD")
+        initials = data[12]
         
         if (form == 'days'):
           day_show = list(day_show.replace(",", ""))
@@ -97,11 +127,11 @@ class InvoiceManager:
           balance = []
         
         
-        test_data = (provider_id, provider_name, provider_address, provider_phone, account, invoice_default, form, day_show, description, language, chat_id, amount  )
-        provider_data = (provider_id, provider_name, provider_address, provider_phone, account, invoice_default, description, language, chat_id, amount, balance  )   
-        #print(test_data)      
-        test = CreateInvoice(list(provider_data))
-        test.print_invoice()
+       
+        provider_data = (provider_id, provider_name, provider_address, provider_phone, account, invoice_default, description, language, chat_id, amount, balance, initials  )   
+       
+        invoice = CreateInvoice(list(provider_data))
+        return(invoice.print_invoice(), chat_id)
         
     myDB.close()
     
@@ -144,8 +174,47 @@ class InvoiceManager:
         12: "Deciembre"
       }
       return f" {spanish_dict[month]} {year}"
+    
+  def build_fortnightly_description(self, language):
+    now = datetime.now()
+    month = now.month
+    year =  now.year
+    day = now.day 
+    last_day = calendar.monthrange (year,month) [1] 
+    
+    if day <= 15:
+      if language == 'english':
+        firstDay = date(year, month, 1).strftime("%m/%d/%Y")
+        lastDay = date(year,month, 15).strftime("%m/%d/%Y")
+        return f" from {firstDay} to {lastDay}"
+      else:
+        firstDay = date(year, month, 1).strftime("%d/%m/%Y")
+        lastDay = date(year,month, 15).strftime("%d/%m/%Y")
+        return f" desde {firstDay} hasta {lastDay}"
       
+    else:
+      if language == 'english':
+        firstDay = date(year, month, 16).strftime("%m/%d/%Y")
+        lastDay = date(year,month, last_day).strftime("%m/%d/%Y")
+        return f" from {firstDay} to {lastDay}"
+      else:
+        firstDay = date(year, month, 16).strftime("%d/%m/%Y")
+        lastDay = date(year,month, last_day).strftime("%d/%m/%Y")
+        return f" desde {firstDay} hasta {lastDay}"
+        
       
+  def build_build_description(self, language):
+    #now = datetime.now
+    now = datetime.strptime('10/25/2024', '%m/%d/%Y')
+    dates = now.strftime("%d/%m/%Y")
+    start_date = (now - relativedelta(days=4)).strftime("%d/%m/%Y")
+    
+    if language == "english":
+      return f" from {start_date} to {dates}"
+    else:
+      return f" desde {start_date} hasta {dates}"
+    
+        
   def check_balance(self, id):
     myDB = DatabaseManager()
     myDB.connect()    
@@ -179,7 +248,7 @@ class InvoiceManager:
       row =  []
       old_payment = 0
       for balance in balances:            
-        payment = self.check_payments(balance[0], provider_name, 30)           
+        payment = self.check_payments(balance[0], provider_name, difference)           
         date_invoice = balance[0].strftime("%m/%d/%Y")             
         description = balance[1]
         charge = balance[3]
@@ -195,13 +264,14 @@ class InvoiceManager:
         previous = previous
         old_payment += payment                      
         table.append(list(row))  
-      print(list(reversed(table)))  
         
        
       return list(reversed(table))
 
     else:
       return None
+    
+  
     
     
     
@@ -222,7 +292,9 @@ class InvoiceManager:
   #   print(self.week_day, self.date_number)
   
 test = InvoiceManager()
-test.check_monthly_invoices()
+print(test.check_monthly_invoices())
+print(test.check_fortnightly_invoices())
+#test.check_weekly_invoices()
 
 
 
